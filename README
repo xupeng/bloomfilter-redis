@@ -1,0 +1,4 @@
+This is the little bloom filter we're using to filter unique views using redis.
+
+It doesn't do anything special, but I didn't find any small and dependency-free 
+bloom filter written in Python that use Redis as their backend.
