@@ -31,13 +31,20 @@ class BloomFilter(object):
         results = pipeline.execute()
         return all(results)
     
-    def add(self, key):
+    def add(self, key, set_value=1):
+        # set bits for every hash to 1
         pipeline = self.connection.pipeline()
         for hashed_offset in self.calculate_offsets(key):
-            pipeline.setbit(self.bitvector_key, hashed_offset, 1)
+            pipeline.setbit(self.bitvector_key, hashed_offset, set_value)
         pipeline.execute()
     
+    def delete(self, key):
+        # delete is just an add with value 0
+        self.add(key, set_value=0)
+    
     def calculate_offsets(self, key):
+        # we're using only two hash functions with different settings, as described
+        # by Kirsch & Mitzenmacher: http://www.eecs.harvard.edu/~kirsch/pubs/bbbf/esa06.pdf
         hash_1 = FNVHash(key)
         hash_2 = APHash(key)
         
@@ -65,4 +72,9 @@ if __name__ == '__main__':
     assert 'two' not in f
     assert 'eleven' not in f         
     
+    f.delete('ten')
+    
+    assert 'ten' not in f
+    
+    # remove the key in redis
     connection.delete('test_bloomfilter')
