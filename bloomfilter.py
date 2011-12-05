@@ -38,21 +38,26 @@ class TimeSeriesBloomFilter(object):
         self.k = k
     
     def most_current_filters(self, **kwargs):
-        within = kwargs.pop('within')
+        within = kwargs.get('within')
+        now = kwargs.get('now', datetime.now())
         
-        resolution_microseconds = self.time_resolution.days*86400 + \
-            self.time_resolution.seconds + self.time_resolution.microseconds
+        resolution_microseconds = (self.time_resolution.days*86400 + self.time_resolution.seconds)*1e6 + \
+                                    self.time_resolution.microseconds
+        
+        within_microseconds = (within.days*86400 + within.seconds)*1e6 + within.microseconds
         
         # how many bloom filters will we need to iterate for this?
-        num_filters = int(math.ceil(float((within.days*86400 + within.seconds)*1e6 + \
-                        within.microseconds) / resolution_microseconds))
+        num_filters = int(math.ceil(within_microseconds / resolution_microseconds))
+        
+        # figure out what the passed timestamp really is
+        current_microtimestamp = time.mktime(now.timetuple())*1e6 + now.microsecond
         
         # get a datetime object of the 'current' filter
-        block_now = resolution_microseconds * math.floor(time.time()*1e6 / resolution_microseconds)
-        now = datetime.fromtimestamp(block_now/1e6)
+        block = resolution_microseconds * math.floor(current_microtimestamp / resolution_microseconds)
+        block_now = datetime.fromtimestamp(block/1e6)
         
         for x in xrange(num_filters):
-            filter_date = now - x * self.time_resolution
+            filter_date = block_now - x * self.time_resolution
             filter_bitvector_key = '%s|%s' % (self.bitvector_key, filter_date.isoformat())
             yield BloomFilter(self.connection, filter_bitvector_key, self.n, self.k)
     
