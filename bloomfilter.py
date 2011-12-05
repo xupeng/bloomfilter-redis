@@ -25,22 +25,18 @@ def APHash(key):
 class TimeSeriesBloomFilter(object):    
     # todo: expire bloom filter keys after their 'time_limit' is passed, this can happen
     #       in the add() pipeline
-    # todo: support a 'now' so that we can add stuff in the past
     # todo: make it more clear how all this works
     # todo: create a helper function that calculates the total amount of memory stored
     
     def __init__(self, connection, bitvector_key, n, k, **kwargs):
         self.time_resolution = kwargs.get('time_resolution', timedelta(minutes=1))
-        self.time_limit = kwargs.get('time_limit', timedelta(hours=1))
+        self.time_limit = kwargs.get('time_limit', timedelta(minutes=10))
         self.connection = connection
         self.bitvector_key = bitvector_key
         self.n = n
         self.k = k
     
-    def most_current_filters(self, **kwargs):
-        within = kwargs.get('within')
-        now = kwargs.get('now', datetime.now())
-        
+    def most_current_filters(self, within, now):
         resolution_microseconds = (self.time_resolution.days*86400 + self.time_resolution.seconds)*1e6 + \
                                     self.time_resolution.microseconds
         
@@ -63,17 +59,19 @@ class TimeSeriesBloomFilter(object):
     
     def add(self, key, **kwargs):
         within = kwargs.get('within', self.time_resolution)
+        now = kwargs.get('now', datetime.now())
         
         # add to the current bloom filter
-        for bloom_filter in self.most_current_filters(within=within):
+        for bloom_filter in self.most_current_filters(within=within, now=now):
             bloom_filter.add(key)
     
     def __contains__(self, key, **kwargs):
         # checks if this time series bloom filter has 
         # contained an element within the last x minutes
         within = kwargs.get('within', self.time_limit)
+        now = kwargs.get('now', datetime.now())
         
-        for bloom_filter in self.most_current_filters(within=within):
+        for i,bloom_filter in enumerate(self.most_current_filters(within=within, now=now)):
             if key in bloom_filter:
                 return True
         else:
