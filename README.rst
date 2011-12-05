@@ -2,7 +2,7 @@
 bloomfilter-redis
 =================
 
-Easy + Time series bloom filters backed by redis bitvectors
+Standard & Time series bloom filters, backed by redis bitvectors
 
 Overview
 ========
