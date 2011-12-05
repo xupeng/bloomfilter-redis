@@ -1,7 +1,17 @@
+===============================================================================
+bloomfilter-redis - Easy + Time series bloom filters backed by redis bitvectors
+===============================================================================
+
+Overview
+========
+
 This is the little bloom filter we're using to filter unique views using redis.
 
 It doesn't do anything special, but I didn't find any small and dependency-free 
 bloom filter written in Python that use Redis as their backend.
+
+Quick Benchmarks
+================
 
 Quick benchmark for ballpark figures on a MacbookPro (2x 2.66GHz) with Python 2.7,
 hiredis and Redis 2.9 (unstable). Each benchmark was run with k=4 hashes per key.
