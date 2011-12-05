@@ -140,7 +140,7 @@ if __name__ == '__main__':
         filter_size = 8 * 500 * 1024
         test_amount = 100000
         
-        f = BloomFilter(connection=connection, key='test_bloomfilter', n=filter_size, k=4)
+        f = BloomFilter(connection=connection, bitvector_key='test_bloomfilter', n=filter_size, k=4)
         
         print "filling bloom filter of %.2fkB size with %ik values" % \
             (filter_size/1024.0/8, test_amount/1000)
