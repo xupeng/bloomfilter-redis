@@ -1,6 +1,8 @@
-===============================================================================
-bloomfilter-redis - Easy + Time series bloom filters backed by redis bitvectors
-===============================================================================
+=================
+bloomfilter-redis
+=================
+
+Easy + Time series bloom filters backed by redis bitvectors
 
 Overview
 ========
@@ -9,6 +11,18 @@ This is the little bloom filter we're using to filter unique views using redis.
 
 It doesn't do anything special, but I didn't find any small and dependency-free 
 bloom filter written in Python that use Redis as their backend.
+
+Time Series
+========
+If you're tracking users over time, and you want to answer the question "have we seen
+this guy in the past 2 minutes", this is exactly right for you. For high-throughput
+applications this is very space-effective. The total memory footprint is known before-
+hand, and is based on the amount of history you want to save and the resolution.
+
+You might track users in the past 2 minutes with a 10-second resolution using 12 bloom
+filters. User hits are logged into the most recent bloom filter, and checking if you
+have seen a user in the past 2 minutes will just go back through those 12 filters.
+
 
 Quick Benchmarks
 ================
