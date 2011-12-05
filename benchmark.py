@@ -9,7 +9,7 @@ from bloomfilter import BloomFilter, TimeSeriesBloomFilter
 connection = redis.Redis()
 
 filter_size = 8 * 500 * 1024
-test_amount = 1000 * 100
+test_amount = 1000 * 10
 
 TimeSeriesBloomFilter
 f = TimeSeriesBloomFilter(connection=connection, bitvector_key='test_bloomfilter', n=filter_size, k=4)
