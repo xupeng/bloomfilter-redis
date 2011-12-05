@@ -23,8 +23,6 @@ def APHash(key):
     return hash
 
 class TimeSeriesBloomFilter(object):    
-    # todo: expire bloom filter keys after their 'time_limit' is passed, this can happen
-    #       in the add() pipeline
     # todo: make it more clear how all this works
     # todo: create a helper function that calculates the total amount of memory stored
     
@@ -61,9 +59,11 @@ class TimeSeriesBloomFilter(object):
         within = kwargs.get('within', self.time_resolution)
         now = kwargs.get('now', datetime.now())
         
+        
         # add to the current bloom filter
         for bloom_filter in self.most_current_filters(within=within, now=now):
-            bloom_filter.add(key)
+            # we'll expire the bloom filter we're setting to after 'limit' + 1 seconds
+            bloom_filter.add(key, timeout=self.time_limit.seconds+1)
     
     def __contains__(self, key, **kwargs):
         # checks if this time series bloom filter has 
@@ -102,13 +102,17 @@ class BloomFilter(object):
         results = pipeline.execute()
         return all(results)
     
-    def add(self, key, set_value=1, transaction=False):
+    def add(self, key, set_value=1, transaction=False, timeout=None):
         # set bits for every hash to 1
         # sometimes we can use pipelines here instead of MULTI,
         # which makes it a bit faster
         pipeline = self.connection.pipeline(transaction=transaction)
         for hashed_offset in self.calculate_offsets(key):
             pipeline.setbit(self.bitvector_key, hashed_offset, set_value)
+        
+        if timeout is not None:
+            pipeline.expire(self.bitvector_key, timeout)
+        
         pipeline.execute()
     
     def delete(self, key):
