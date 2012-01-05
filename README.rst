@@ -2,7 +2,9 @@
 bloomfilter-redis
 =================
 
-Standard & time series bloom filters, backed by redis bit vectors
+Standard & time series bloom filters, backed by Redis bit vectors.
+
+This implementation is Python-only. If you're looking for (way) more speed, check out a C-based extension that uses hiredis at https://github.com/seomoz/pyreBloom
 
 Overview
 ========
