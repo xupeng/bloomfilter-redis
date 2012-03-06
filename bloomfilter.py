@@ -60,11 +60,20 @@ class TimeSeriesBloomFilter(object):
         within = kwargs.get('within', self.time_resolution)
         now = kwargs.get('now', datetime.now())
 
-
         # add to the current bloom filter
         for bloom_filter in self.most_current_filters(within=within, now=now):
             # we'll expire the bloom filter we're setting to after 'limit' + 1 seconds
             bloom_filter.add(key, timeout=self.time_limit_seconds+1)
+
+    def delete(self, key, **kwargs):
+        within = kwargs.get('within', self.time_limit)
+        now = kwargs.get('now', datetime.now())
+
+        # delete from the time series bloomfilters
+        for bloom_filter in self.most_current_filters(within=within, now=now):
+            # in case of creating new filter when deleting, so check first
+            if key in bloom_filter:
+                bloom_filter.delete(key)
 
     def __contains__(self, key, **kwargs):
         # checks if this time series bloom filter has
