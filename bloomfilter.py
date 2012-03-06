@@ -29,6 +29,7 @@ class TimeSeriesBloomFilter(object):
     def __init__(self, connection, bitvector_key, n, k, **kwargs):
         self.time_resolution = kwargs.get('time_resolution', timedelta(minutes=1))
         self.time_limit = kwargs.get('time_limit', timedelta(minutes=10))
+        self.time_limit_seconds = self.time_limit.days*86400 + self.time_limit.seconds
         self.connection = connection
         self.bitvector_key = bitvector_key
         self.n = n
@@ -63,7 +64,7 @@ class TimeSeriesBloomFilter(object):
         # add to the current bloom filter
         for bloom_filter in self.most_current_filters(within=within, now=now):
             # we'll expire the bloom filter we're setting to after 'limit' + 1 seconds
-            bloom_filter.add(key, timeout=self.time_limit.seconds+1)
+            bloom_filter.add(key, timeout=self.time_limit_seconds+1)
 
     def __contains__(self, key, **kwargs):
         # checks if this time series bloom filter has
