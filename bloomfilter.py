@@ -135,7 +135,7 @@ class BloomFilter(object):
 
     def calculate_offsets(self, key):
         # we're using only two hash functions with different settings, as described
-        # by Kirsch & Mitzenmacher: http://www.eecs.harvard.edu/~kirsch/pubs/bbbf/esa06.pdf
+        # by Kirsch & Mitzenmacher: https://www.eecs.harvard.edu/~michaelm/postscripts/tr-02-05.pdf
         hash_1 = FNVHash(key)
         hash_2 = APHash(key)
 
